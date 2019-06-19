@@ -1,0 +1,170 @@
+---
+title: "Bedarbių skaičiaus pokyčių priežastys Lietuvoje 2004 – 2018 metais"
+author: "Akvilė Petkevičiūtė"
+date: '2019-06-19'
+output:
+  pdf_document:
+    includes:
+      in_header: header_lt_text.txt
+  html_document:
+    df_print: paged
+bibliography: bibliography.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, collapse=TRUE, error=TRUE, warning = FALSE, message= FALSE, cache=TRUE)
+```
+
+# Įvadas
+
+Darbas yra pagrindinis žmogaus gyvenimo užsiėmimas bei pragyvenimo šaltinis. Akivaizdu, kad darbo netekęs arba negalintis susirasti asmuo yra našta valstybei. Žinoma, valstybės stengiasi tokiems žmonėms padėti ir paremti (nebūtinai tik finansiškai). Tačiau didelis bedarbių žmonių skaičius daro neigiamą įtaką valstybės funkcionavimui, todėl reikia stengtis ieškoti būdų ir imtis priemonių, kad kuo mažiau piliečių patektų į bedarbių gretas. Lietuva 2004-2018 metais patyrė tiek bedarbių skaičiaus sumažėjimą, tiek augimą, todėl supratus kaip ir kodėl keitėsi bedarbių skaičius galima ruoštis ateities darbo rinkos pokyčiams. 
+
+Taip pat bedarbių skaičius šalyje yra puikus ekonominės padėties rodiklis, kadangi tarp bedarbių skaičiaus ir ekonominės krizės yra glaudus ryšys. Kitas darbo rinkai svarbus kintamasis - emigracija - taipogi daro įtaką bedarbių skaičiui šalyje. Nors šios priežastys dažniausiai yra traktuojamos kaip pagrindinės, jos ne vienintelės nulemia bedarbių skaičiaus rodiklių svyravimus.   
+
+# Bedarbio asmens sąvoka
+
+Skirtinguose šaltiniuose galime susidurti su nevienodai apibrėžiama bedarbio asmens sąvoka. @matulevivciene2010bedarbystes Pavyzdžiui, "Užimtumo tarnyba" (buvusi "Darbo birža") bedarbiais traktuoja visus darbo neturinčius asmenis, kurie yra užsiregistravę darbo biržoje. Tuo tarpu statistikos departamentas bedarbio sąvoka taiko visiems nedirbantiems, bet darbo ieškantiems asmenims. Tokiu būdu, skirtingai traktuojant bedarbį asmenį, pateikiamos institucijų statistikos gali skirtis ir ne visada atspindėti realybę. 
+
+Tarptautinė darbo organizacija (TDO) pateikia dar vieną metodologijos būdą, skirtą identifikuoti bedarbiams asmenims. Taigi, pagal TDO bedarbiai yra darbingo amžiaus asmenys (t.y 15-74 metų amžiaus), kurie yra užsiregistravę arba neužsiregistravę "Užimtumo tarnyboje" bei atitinka tris keliamus reikalavimus - tiriamą savaitę nutiri darbo arba neužsiima privačia veikla, pastarųjų keturių savaičių laikotarpyje aktyviai ieško darbo, o jeigu bus pasiūlytas darbas pasiruošę pradėti dirbti artimiausių dviejų savaičių laikotarpyje.
+
+Siekiant išvengti galimų netikslumų remsiuosi Lietuvos Respublikos užimtumo įstatymo 22 straipsnio bedarbio apibrėžimu, kuriuos taip pat vadovaujasi "Užimtumo tarnyba":
+"Bedarbis – nedirbantis darbingo amžiaus darbingas asmuo, kuris nesimoko pagal bendrojo ugdymo arba pagal formaliojo profesinio mokymo programas, išskyrus asmenis, kurie mokosi pagal suaugusiųjų pradinio, pagrindinio, vidurinio ugdymo programas, ar asmenis, kurie mokosi pagal formaliojo profesinio mokymo programas savo lėšomis, arba nestudijuoja aukštojoje mokykloje pagal nuolatinės formos studijų programas ir yra įstatymų nustatyta tvarka įsiregistravęs darbo biržoje". 
+
+# Bedarbių asmenų skaičius Lietuvoje 2004-2018 metais
+
+Analizuojamą laikotarpį (nuo 2004 iki 2018 metų) galima suskirstyti į tris smulkesnius periodus. Tokį skirstymą taip pat naudojo Aldona Damulienė savo darbe "Ekonomikos svyravimų poveikis Lietuvos nedarbo lygiui 1998-2011 metais". @damuliene2012ekonomikos Aišku A. Damulienė vertino duomenis tik iki 2011 metų.
+
+1. Nuo 2004 iki 2007 metų. Šiuo laikotarpiu matomas nuoseklus bedarbių skaičiaus mažėjimas. O 2007 metais bedarbių skaičius pasiekia neregėtas žemumas. 
+2. Nuo 2007 iki 2010 metų. Laikotarpis, kai bedarbių skaičius kilo kosminių greičiu ir pasiekė Everesto viršūnę ties 270 tūkst. bedarbių.
+3. Nuo 2010 iki 2018 metų. Aiškiai matomas bedarbių skaičiaus mažėjimas, kuris vyksta paliaipsniui ir tęsiasi visą periodą.
+Visą tai puikiai galima atspindėti grafiškai.
+
+```{r}
+if(!require(eurostat)) {install.packages("eurostat")
+  library(eurostat)}
+if(!require(dplyr)) {install.packages("dplyr")
+  library(dplyr)}
+if(!require(ggplot2)) {install.packages("ggplot2")
+  library(ggplot2)}
+
+une_rt_a <- get_eurostat("une_rt_a",
+                         stringsAsFactors = FALSE,
+                         filters = list (geo = "LT",
+                                         unit = "THS_PER",
+                                         sex = "T",
+                                         age = "TOTAL"))
+df1 <- une_rt_a %>%
+  filter (time >= "2004-01-01")
+
+
+ggplot(df1,aes(time, values))+
+geom_line()+
+scale_x_date(date_breaks = "1 year") +
+  theme(axis.text.x = element_text(angle=90)) +
+   labs (title= "Bedarbių skaičius Lietuvoje 2004-2018 metais",
+        subtitle = "Šaltinis: Eurostat (une_rt_a)",
+x = "Metai",
+y = "Žmonių skaičius, tūkst.")
+
+```
+
+
+
+
+# Bedarbių skaičiaus pokyčių priežastys
+
+Žinant kaip keitėsi bedarbių asmenų skaičius, ne ką mažiau svarbu identifikuoti to priežastis. Kadangi pokyčiai nevyksta be priežasčių, o jų pasekmės jaučiamos visos valstybės mastu. Tad žinant priežastis, galima daryti išvadas ir ruoštis ateities bedarbių skaičiaus svyravimams bei ieškoti būdų tam užkirsti kelią iš anksto.
+
+## Emigracija
+
+Viena svarbiausių bedarbių asmenų skaičiaus pokyčio priežasčių yra emigracija. Ji tapo ypač juntama Lietuvai įstojus į Europos Sąjungą, kai judėjimas bei darbas euro zonoje tapo žymiai lengvesnis. Emigracija nebūtų tokia didelė problema, jeigu imigracijos mastai būtų analogiški ar bent jau panašūs, tačiau Lietuva susiduria su situacija, kai išvykstančiųjų žymiai daugiau.
+
+```{r,}
+if(!require(eurostat)) {install.packages("eurostat")
+  library(eurostat)}
+if(!require(dplyr)) {install.packages("dplyr")
+  library(dplyr)}
+if(!require(ggplot2)) {install.packages("ggplot2")
+  library(ggplot2)}
+
+migr_emi2 <- get_eurostat("migr_emi2")
+                         
+df2 <- migr_emi2 %>%
+  filter (geo=="LT",
+          time>="2004-01-01",
+          sex=="T",
+          age=="TOTAL",
+          unit=="NR",
+          agedef=="REACH")
+
+ggplot(df2, aes(time, values)) +
+  geom_bar(stat="identity") +
+  labs(x="Metai", y="Emigrantų skaičius", 
+       title = "Emigrantų iš Lietuvos skaičius 2004-2018 metais", 
+       subtitle= "Šalitinis: Eurostat (migr_emi2)")
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+Stulpelinėje diagramoje matome, kad bene visu laikotarpiu nuo 2004 iki 2018 metų emigrantų skaičius daugiau ar mažiau buvo apylygis ir vidutiniškai sudarė apie 40 tūkst. asmenų per metus. Išskyrus 2010 metus, kai emigrantų skaičius šoktelėjo kone dvigubai ir tai sąlygojo žymų bedarbių skaičiaus sumažėjimą.
+Pasak Daivos Beržinskienės, Rasos Reizgevičienės ir Mariaus Reizgevičiaus straipsnyje "Migracijos įtaka darbo rinkai", didelę įtaką bedarbių skiačiaus mažėjimui tarp 2004 ir 2007 metų padarė piniginės perlaidos iš užsienio emigrantų bei pati emigraciją. Tačiau svarbu nepamiršti, kad emigruoja ne tik darbo neturintys asmenys. @bervzinskiene2010migracijos
+
+
+## Ekonominė krizė
+
+Dar viena nedarbo lygio šalyje ir to pasėkos bedarbių asmenų skaičiaus didėjimui turintį didelę įtaka priežastis yra ekonominė krizė. Kaip teigiama Milenos Matulevičienės rašto darbe "Bedarbystės ir nedarbo lygio teritorinė sklaida nepriklausomoje Lietuvoje", kai valstybės išgyvena ekonomines krizes, gamyba mažėja, o nedarbas auga. @matulevivciene2010bedarbystes Priešinga situacija susidaro patiriant ekonominį pakilimą, kuomet įmonėms reikia papildomų darbuotojų, ir darbdaviai juos samdo iš bedarbių tarpo. Tada nedarbas žymiai sumažėja, pavyzdžiui, Lietuvoje taip nutiko 2004-2007 metais.
+
+2008-2010 metais, kilus Pasaulinei ekonominiai krizei, bedarbių skaičius smarkiai išaugo. Krizės metais buvo sumažėjęs vartojimas ir gamyba, ko rezultate įmonėms nereikėjo tiek daug darbuotojų, todėl dalis jų neteko darbo. Ypatingai statybų ir žemės ūkio sektoriuose.
+
+O po 2010 metų bedarbių skaičius ėmė mažėti, kas taip pat parodo, kad valstybė atsigauna po krizės, o ekonominiai rodikliai gerėja. Tai lėmė padidėjęs vartojimas, steigiamos naujos darbo vietos, išaugęs eksportas bei minimalaus darbo užmokesčio didinimas. Tačiau iki 2018 metų bedarbių skaičius nepasiekė prieš krizinio lygmens.
+
+## Gyventojų skaičiaus kaita
+
+Aukščiau minėtame rašto darbe išskiriamas dar vienas faktorius, darantis įtaką bedarbių skaičiui ir jo pokyčiams: "Nedarbo priežastis yra spartus gyventojų skaičiaus augimas daugelyje šalių ir dėlto aštrėjanti konkurencija darbo rinkoje. @lisauskaite2016nedarbas Anot anglų ekonomisto ir sociologo T. Malthus'o, nedarbas ir skurdas yra natūralūs reiškiniai, kadangi gyventojų skaičius dėl gamtos dėsnių didėja greičiau nei pragyvenimo reikmenų kiekis. Tik dirbtinai apribojant gyventojų prieaugį, galima įveikti nedarbą". Tačiau jei užmestume akį į Lietuvos gyventojų skaičių 2004-2018 metais, pamatytume, kad gyventojų mažėja. Ypač ženkliai sumažėjo po 2010 metų. Tokį sumažėjimą galima pateisinti emigracijos banga bei neigiamu Lietuvos gyventojų prieaugių, kas sąlygojo ir bedarbių skaičiaus sumažėjimą. 
+
+```{r}
+if(!require(eurostat)) {install.packages("eurostat")
+  library(eurostat)}
+if(!require(dplyr)) {install.packages("dplyr")
+  library(dplyr)}
+if(!require(knitr)) {install.packages("knitr")
+  library(knitr)}
+
+demo_pjan <- get_eurostat("demo_pjan",
+                          stringsAsFactors = FALSE,
+                          filters = list (age = "TOTAL",
+                                          geo = "LT",
+                                          sex = "T",
+                                          unit = "NR"))
+
+df4 <- demo_pjan %>%
+  filter (time >= "2004-01-01")
+
+table <- df4 %>% select("time","values")
+kable(table)
+
+```
+## Darbo jėgos apmokestinimas
+
+Nuo mokesčių sistemos sugeneravimo priklauso visos šalies ekonomikos veikimas bei socialinė gerovė. Pagrindinės Lietuvos Respublikos biudžeto pajamos yra surenkamos mokesčių pavidalu, todėl mokesčių svarba yra neabejotina. 
+
+Pasak Nikitos Pčelnikovo darbe "Darbo jėgos apmokestinimo problematika ir galimi sprendimo būdai", darbo vietos kaina susideda iš darbdavio ir darbuotojo mokesčių. @pvcelnikovas2018darbo Darbdavio mokesčiams priklauso - VSD (valstybinio socialinio draudimo) įmoka, PSD (Privalomo sveikatos draudimo) įmoka, įmoka į Garantinį fondą ir įmoka į Ilgalaikio darbo išmokų fondą. Tuo tarpu darbuotojo mokesčiai: GPM (Gyventojų pajamų mokestis), PSD, pensijų ir socialinio draudimo įmoka. Nepaisant to, mokesčiai vadinami darbdavio ar darbuotojo, jie yra išskaičiuojami iš to paties įmonės darbo užmokesčio fondo.
+
+Žinant mokesčių tarifus, kurie yra: GPM - 15%, PSD - 6% ir 3% (atitinkamai darbuotojo ir darbdavio), Pensijų ir socialinio draudimo įmoka - 3%, VSD - 27,48%, įmoka į Garantinį fonda - 0,2%, įmoka į Ilgalaikio darbo išmokų fondą - 0,5%, galime pasiskaičiuoti darbo vietos kainą. Tarkime, kad 2018 metais žmogus neto atlyginimo dar kitaip vadinamo "į rankas" uždirba 1000 eurų. Tai mokesčiai nuo darbo vietos kainos sudarys 726,05 eurus ir tai bus 42,06% .
+
+Deja, mokestinė našta neretai tampa pretekstu klestėti šešėliui, kai atlyginimai mokami "vokeliuose". Tokiu būdu darbdavys apeina mokestinę sistemą, o darbuotojas gauną sutartą didesnį atlygį. Šešėlyje dirbantys asmenys dirba neoficialiai, todėl taip pat patenka į bedarbių statistikas, turi galimybę gauti bedarbio pašalpą.
+
+
+# Išvados
+Lietuva nuo 2004 iki 2018 metų išgyveno tris bedarbių skaičiaus pokyčių periodus:
+1) 2004-2007 metais, kai bedarbių skaičius mažėjo. Tai lėmė ekonomikos klestėjimas - kuriamos naujos darbo vietos, steigiamos įmonės.
+2) 2007-2010, kai bedarbių skaičius žymiai išaugo. Tam didelę reikšmę turėjo kilusi Pasaulinė ekonominė krizė, kai daugelis ankščiau darbuotojus linkusių įdarbinti įmonių buvo priverstos mažinti gamybą ir darbuotojų skaičių, siekiant išlikti rinkoje.
+3) 2010-2018 metai, kai bedarbių skaičius vėl mažėjo. Prie to prisidėjo suaktyvėjusi emigracija, pasibaigusi krizė bei likviduojamos jos pasekmės, kai įmonės atsigauna, steigiasi naujos, plečiasi gamyba ir atsiranda naujų darbuotojų paklausa.
+
+Priežastys lėmusios bedarbių skaičių yra Ekonominė krizė, emigracija, darbo jėgos apmokestinimas. Ekonominė krizė ir darbo jėgos apmokestinimas atsakingi už bedarbių skaičiaus šalyje augimą, o emigracija šį skaičių sumažino, ypatingai po Ekonominės krizės, kai bedarbių buvo daugiausiai per visą analizuojamą laikotarpį. Tarp bedarbių skaičiaus priežasčių literatūroje nurodoma ir gyventojų skaičiaus kaita, kuri dažniausiai pasižymi demografiniais sprogimais ir išaugusiomis bedarbių apimtimis, tačiau remiantis statistika Lietuvoje gyventojų per visą laikotarpį tik mažėjo, todėl šis veiksnys nepadarė reikšmingos įtakos bedarbių skaičiui.
+
+# Literatūros sąrašas
+
+
+
